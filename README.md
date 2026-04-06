@@ -4,10 +4,10 @@
   <img src="TV Viewing Logs.png" alt="TV Viewing Logs Project Architecture" title="TV Viewing Logs Project Architecture" width="100%">
 </a>
 
-Folder này sẽ giúp chúng ta: 
-1) Xử lý & tổng hợp data ở 2 folder log_content & log_search
+Bài tập cuối khóa của lớp DE anh Trần Hoàng Long. Project này hoạt động theo các bước sau: 
+1) Xử lý & tổng hợp data ở 2 folder `log_content` & `log_search` *(2 folder này không tiện show public, vui lòng liên hệ tôi để lấy)*
 2) Bắn các bảng data tổng hợp lên DB
-3) Kết nối viz tool với data trong DB để vẽ report, dashboard
+3) Kết nối viz tool với data trong DB để vẽ dashboard
 
 ## 1. Cài đặt môi trường và thư viện
 
@@ -39,9 +39,7 @@ pip install -r requirements.txt
 
 ## 2. Tạo database MySQL
 
-Tôi chọn AWS vì họ cho phép người dùng Free Tier tạo DB, với các bước tương đối đơn giản.
-
-Về cách tạo acc AWS Free Tier thì có đầy trên Youtube, tự túc đi bạn.
+Ở project này chúng ta dùng AWS, bạn có thể thử các cloud platform khác nếu muốn.
 
 - Login vào AWS. Search & click vào Service **Aurora and RDS**. Vào tab **Database** & ấn **Create database**.
 - *Choose a database creation method*: chọn **Standard create**
@@ -81,8 +79,8 @@ Chạy script `Code_ETL_Log_Content_Summary.py` để xử lý dữ liệu log_c
 ## 5. Tạo file most_searched_keywords.csv
 
 - Chạy script `Code_ETL_Log_Search_Most_Searched_Keywords.py` để xử lý dữ liệu log_search và sinh 2 file:  `most_searched_comparison.csv` & `distinct_most_searched_keywords.csv`.
-    - `most_searched_comparison.csv` chứa 3 cột: user_id, từ khóa được tìm nhiều nhất vào T6, từ khóa được tìm nhiều nhất vào T7.
-    - `distinct_most_searched_keywords.csv` chứa duy nhất 1 cột keywords--là các unique keywords được tìm nhiều nhất T6 & T7 bởi từng user_id, cần nhờ LLM phân loại.
+    - `most_searched_comparison.csv` chứa 3 cột: `user_id`, `từ khóa được tìm nhiều nhất vào T6`, `từ khóa được tìm nhiều nhất vào T7`.
+    - `distinct_most_searched_keywords.csv` chứa duy nhất 1 cột `keywords`--là các unique keywords được tìm nhiều nhất T6 & T7 bởi từng `user_id`. --> chúng ta cần nhờ LLM phân loại các keyword này thuộc category gì.
 
 ## 6. Phân loại keywords bằng LLM
 
@@ -105,3 +103,9 @@ Chạy script `Code_ETL_Log_Search_Most_Searched_Categories.py` để:
 - Còn nếu không: thử dùng **MYSQL_CONNECTION_STRING** trong `credentials_sample.env` để connect Power BI với instance DB thông qua phương thức ODBC
 
 Connect xong, load các bảng & dùng data để vẽ dashboard (tham khảo dashboard tồi tàn của tôi ở file `study-de-final-project-Pham-Quoc-Hung.pbix`).
+
+## Contact
+
+Author: Phạm Quốc Hùng <br />
+
+<a href="mailto:pham.quochung0999@gmail.com">![Gmail](https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white)</a> <a href="https://public.tableau.com/app/profile/hung.pham279">![Tableau](https://img.shields.io/badge/Tableau-E97627?style=for-the-badge&logo=Tableau&logoColor=white)</a> <a href="https://github.com/phamquochung279">![Github](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)</a> <a href="https://www.linkedin.com/in/pham-quochung/">![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)</a>
