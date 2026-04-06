@@ -1,9 +1,9 @@
 # TV Viewing Log - Data Engineering Project
 
 Bài tập cuối khóa của lớp DE anh Trần Hoàng Long. Project này hoạt động theo các bước sau: 
-1) Xử lý & tổng hợp data ở 2 folder log_content & log_search
+1) Xử lý & tổng hợp data ở 2 folder `log_content` & `log_search`
 2) Bắn các bảng data tổng hợp lên DB
-3) Kết nối viz tool với data trong DB để vẽ report, dashboard
+3) Kết nối viz tool với data trong DB để vẽ dashboard
 
 ## 1. Cài đặt môi trường và thư viện
 
@@ -75,8 +75,8 @@ Chạy script `Code_ETL_Log_Content_Summary.py` để xử lý dữ liệu log_c
 ## 5. Tạo file most_searched_keywords.csv
 
 - Chạy script `Code_ETL_Log_Search_Most_Searched_Keywords.py` để xử lý dữ liệu log_search và sinh 2 file:  `most_searched_comparison.csv` & `distinct_most_searched_keywords.csv`.
-    - `most_searched_comparison.csv` chứa 3 cột: user_id, từ khóa được tìm nhiều nhất vào T6, từ khóa được tìm nhiều nhất vào T7.
-    - `distinct_most_searched_keywords.csv` chứa duy nhất 1 cột keywords--là các unique keywords được tìm nhiều nhất T6 & T7 bởi từng user_id, cần nhờ LLM phân loại.
+    - `most_searched_comparison.csv` chứa 3 cột: `user_id`, `từ khóa được tìm nhiều nhất vào T6`, `từ khóa được tìm nhiều nhất vào T7`.
+    - `distinct_most_searched_keywords.csv` chứa duy nhất 1 cột `keywords`--là các unique keywords được tìm nhiều nhất T6 & T7 bởi từng `user_id`. --> chúng ta cần nhờ LLM phân loại các keyword này thuộc category gì.
 
 ## 6. Phân loại keywords bằng LLM
 
