@@ -99,3 +99,9 @@ Chạy script `Code_ETL_Log_Search_Most_Searched_Categories.py` để:
 - Còn nếu không: thử dùng **MYSQL_CONNECTION_STRING** trong `credentials_sample.env` để connect Power BI với instance DB thông qua phương thức ODBC
 
 Connect xong, load các bảng & dùng data để vẽ dashboard (tham khảo dashboard tồi tàn của tôi ở file `study-de-final-project-Pham-Quoc-Hung.pbix`).
+
+## Contact
+
+Author: Phạm Quốc Hùng <br />
+
+<a href="mailto:pham.quochung0999@gmail.com">![Gmail](https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white)</a> <a href="https://public.tableau.com/app/profile/hung.pham279">![Tableau](https://img.shields.io/badge/Tableau-E97627?style=for-the-badge&logo=Tableau&logoColor=white)</a> <a href="https://github.com/phamquochung279">![Github](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)</a> <a href="https://www.linkedin.com/in/pham-quochung/">![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)</a>
