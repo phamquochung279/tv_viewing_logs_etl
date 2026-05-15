@@ -3,9 +3,13 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import * 
 from pyspark.sql.window import Window
 import os
+from pathlib import Path
 import mysql.connector
 
-load_dotenv("credentials.env")
+SCRIPT_DIR = Path(__file__).resolve().parent
+PROJECT_DIR = SCRIPT_DIR.parent
+
+load_dotenv(PROJECT_DIR / "credentials.env")
 
 MYSQL_HOST = os.getenv("MYSQL_HOST")
 MYSQL_PORT = int(os.getenv("MYSQL_PORT"))
@@ -16,7 +20,7 @@ MYSQL_DB = os.getenv("MYSQL_DB")
 spark = SparkSession.builder \
     .config("spark.driver.memory", "8g") \
     .config("spark.executor.cores", 8) \
-    .config("spark.jars", "mysql-connector-j-8.0.33.jar") \
+    .config("spark.jars", str(PROJECT_DIR / "mysql-connector-j-8.0.33.jar")) \
     .getOrCreate()
 
 # Join các cặp keywords-categories đã được LLM xử lý vào df gốc
@@ -155,15 +159,15 @@ def import_to_mysql(csv_path, table_name):
 
 # Main function
 if __name__ == "__main__":
-    input_file = "distinct_most_searched_keywords_categorized.txt"
-    output_file = "distinct_most_searched_keywords_categorized_cleaned.txt"
+    input_file = PROJECT_DIR / "distinct_most_searched_keywords_categorized.txt"
+    output_file = PROJECT_DIR / "distinct_most_searched_keywords_categorized_cleaned.txt"
     keyword_categorized_df = clean_and_load_categorized_keywords(input_file, output_file)
     most_searched_comparison_df = spark.read.csv(
-        "../Final Project Folder/most_searched_comparison/most_searched_comparison.csv",
+        str(PROJECT_DIR / "most_searched_comparison" / "most_searched_comparison.csv"),
         header=True,
         inferSchema=True
     )
-    output_csv_path = "most_searched_category_june_vs_july.csv"
+    output_csv_path = PROJECT_DIR / "most_searched_category_june_vs_july.csv"
     join_and_export_df_with_categories(most_searched_comparison_df, "June", "July", keyword_categorized_df, output_csv_path)
     create_database_if_not_exists(MYSQL_HOST, MYSQL_PORT, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DB)
     import_to_mysql(output_csv_path, 'customer_most_searched_categories')

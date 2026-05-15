@@ -11,10 +11,14 @@ import pyspark.sql.functions as sf
 from pyspark.sql.functions import concat_ws
 from datetime import datetime, timedelta
 import os
+from pathlib import Path
 import mysql.connector
 from dotenv import load_dotenv
 
-load_dotenv("credentials.env")
+SCRIPT_DIR = Path(__file__).resolve().parent
+PROJECT_DIR = SCRIPT_DIR.parent
+
+load_dotenv(PROJECT_DIR / "credentials.env")
 
 MYSQL_HOST = os.getenv("MYSQL_HOST")
 MYSQL_PORT = int(os.getenv("MYSQL_PORT"))
@@ -25,7 +29,7 @@ MYSQL_DB = os.getenv("MYSQL_DB")
 spark = SparkSession.builder \
     .config("spark.driver.memory", "8g") \
     .config("spark.executor.cores", 8) \
-    .config("spark.jars", "C:\\Users\\acer\\Desktop\\study_de\\Big Data\\BigData_Gen14\\Final Project Folder\\mysql-connector-j-8.0.33.jar") \
+    .config("spark.jars", str(PROJECT_DIR / "mysql-connector-j-8.0.33.jar")) \
     .getOrCreate()
 
 def categorize_AppName(df):

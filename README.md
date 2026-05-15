@@ -249,11 +249,11 @@ MYSQL_DB=tên DB bạn muốn tạo để lưu các bảng data mà project này
 
 ## 4. Xử lý & đẩy bảng customer_content_stats_summary lên DB
 
-Chạy script `Code_ETL_Log_Content_Summary.py` để xử lý dữ liệu log_content và đẩy thành bảng `customer_content_stats_summary` lên MySQL.
+Chạy script `Final Project/main/Code_ETL_Log_Content_Summary.py` để xử lý dữ liệu log_content và đẩy thành bảng `customer_content_stats_summary` lên MySQL.
 
 ## 5. Tạo file most_searched_keywords.csv
 
-- Chạy script `Code_ETL_Log_Search_Most_Searched_Keywords.py` để xử lý dữ liệu log_search và sinh 2 file:  `most_searched_comparison.csv` & `distinct_most_searched_keywords.csv`.
+- Chạy script `Final Project/main/Code_ETL_Log_Search_Most_Searched_Keywords.py` để xử lý dữ liệu log_search và sinh 2 file:  `most_searched_comparison.csv` & `distinct_most_searched_keywords.csv`.
     - `most_searched_comparison.csv` chứa 3 cột: `user_id`, `từ khóa được tìm nhiều nhất vào T6`, `từ khóa được tìm nhiều nhất vào T7`.
     - `distinct_most_searched_keywords.csv` chứa duy nhất 1 cột `keywords`--là các unique keywords được tìm nhiều nhất T6 & T7 bởi từng `user_id`. --> chúng ta cần nhờ LLM phân loại các keyword này thuộc category gì.
 
@@ -261,13 +261,13 @@ Chạy script `Code_ETL_Log_Content_Summary.py` để xử lý dữ liệu log_c
 
 - Cài đặt [LMStudio](https://lmstudio.ai/) & tải 1 model LLM tùy chọn (nên là 1 model chuyên về text categorization, và có thể chạy được trên máy bạn mà không bốc cháy). Ở đây tôi đang dùng model **qwen2.5-7b-instruct**.
 - Ở panel bên tay trái, chọn tab *Developer* --> click nút toggle *Start Server* hoặc tổ hợp *Ctrl + R*. Status sẽ chuyển thành *Running*, và text Server not running sẽ chuyển thành *Reachable at http://{IP của bạn}:{server port}* --> Model đã được host ở local & sẵn sàng để sử dụng.
-- Mở và chạy notebook `Using_LLM_To_Categorize_Keywords.ipynb` để nhận file `distinct_most_searched_keywords.csv` & thu về file `distinct_most_searched_keywords_categorized.txt`.
+- Chạy script `Final Project/main/Using_LLM_To_Categorize_Keywords.py` để đọc file `distinct_most_searched_keywords.csv` & thu về file `distinct_most_searched_keywords_categorized.txt`.
 
 NOTE: Nếu lap bạn cũng cùi bắp như tôi, process hết *148k keywords* có thể mất vài ngày trời. Xin mời tận dụng file `distinct_most_searched_keywords_categorized.txt` có sẵn của tôi nếu không muốn chờ lâu.
 
 ## 7. Đẩy bảng customer_most_searched_categories lên DB
 
-Chạy script `Code_ETL_Log_Search_Most_Searched_Categories.py` để:
+Chạy script `Final Project/main/Code_ETL_Log_Search_Most_Searched_Categories.py` để:
 - Kết hợp 2 file `most_searched_comparison.csv` & `distinct_most_searched_keywords_categorized.txt` thành bảng hoàn chỉnh gồm 5 cột: user_id, từ khóa search nhiều nhất T6 & T7, thể loại search nhiều nhất T6 & T7
 - Đẩy thành bảng `customer_most_searched_categories` lên MySQL.
 
@@ -277,7 +277,11 @@ Chạy script `Code_ETL_Log_Search_Most_Searched_Categories.py` để:
     
 - Còn nếu không: thử dùng **MYSQL_CONNECTION_STRING** trong `credentials_sample.env` để connect Power BI với instance DB thông qua phương thức ODBC
 
-Connect xong, load các bảng & dùng data để vẽ dashboard (tham khảo dashboard tồi tàn của tôi ở file `study-de-final-project-Pham-Quoc-Hung.pbix`).
+Connect xong, load các bảng & dùng data để vẽ dashboard (tham khảo dashboard tồi tàn của tôi ở file `powerbi\study-de-final-project-Pham-Quoc-Hung.pbix`).
+
+![Power BI dashboard page 1](Final%20Project/powerbi/powerbi_dashboard_page1.png)
+
+![Power BI dashboard page 2](Final%20Project/powerbi/powerbi_dashboard_page2.png)
 
 ## Contact
 
@@ -543,11 +547,11 @@ MYSQL_DB=the name of the DB you want to create to store the data tables produced
 
 ## 4. Process & Push the customer_content_stats_summary Table to DB
 
-Run the script `Code_ETL_Log_Content_Summary.py` to process the log_content data and push it as the `customer_content_stats_summary` table to MySQL.
+Run the script `Final Project/main/Code_ETL_Log_Content_Summary.py` to process the log_content data and push it as the `customer_content_stats_summary` table to MySQL.
 
 ## 5. Create the most_searched_keywords.csv File
 
-- Run the script `Code_ETL_Log_Search_Most_Searched_Keywords.py` to process the log_search data and generate 2 files: `most_searched_comparison.csv` & `distinct_most_searched_keywords.csv`.
+- Run the script `Final Project/main/Code_ETL_Log_Search_Most_Searched_Keywords.py` to process the log_search data and generate 2 files: `most_searched_comparison.csv` & `distinct_most_searched_keywords.csv`.
     - `most_searched_comparison.csv` contains 3 columns: `user_id`, `most searched keyword in June`, `most searched keyword in July`.
     - `distinct_most_searched_keywords.csv` contains a single column `keywords` — the unique keywords most searched in June & July by each `user_id`. --> We need the LLM to categorize what category these keywords belong to.
 
@@ -555,13 +559,13 @@ Run the script `Code_ETL_Log_Content_Summary.py` to process the log_content data
 
 - Install [LMStudio](https://lmstudio.ai/) & download an LLM model of your choice (preferably one specialized in text categorization, and one that your machine can run without bursting into flames). Here I am using the **qwen2.5-7b-instruct** model.
 - In the left panel, select the *Developer* tab --> click the *Start Server* toggle button or press *Ctrl + R*. The status will change to *Running*, and the text "Server not running" will change to *Reachable at http://{your IP}:{server port}* --> The model is now hosted locally & ready to use.
-- Open and run the notebook `Using_LLM_To_Categorize_Keywords.ipynb` to take in `distinct_most_searched_keywords.csv` & produce `distinct_most_searched_keywords_categorized.txt`.
+- Run the script `Final Project/main/Using_LLM_To_Categorize_Keywords.py` to read `distinct_most_searched_keywords.csv` and produce `distinct_most_searched_keywords_categorized.txt`.
 
 NOTE: If you have a potato PC like I do, processing all *148k keywords* can take several days. Feel free to use my pre-made `distinct_most_searched_keywords_categorized.txt` file if you don't have the time.
 
 ## 7. Push the customer_most_searched_categories Table to DB
 
-Run the script `Code_ETL_Log_Search_Most_Searched_Categories.py` to:
+Run the script `Final Project/main/Code_ETL_Log_Search_Most_Searched_Categories.py` to:
 - Combine the 2 files `most_searched_comparison.csv` & `distinct_most_searched_keywords_categorized.txt` into a complete table with 5 columns: user_id, most searched keyword in June & July, most searched category in June & July
 - Push it as the `customer_most_searched_categories` table to MySQL.
 
@@ -571,7 +575,11 @@ Run the script `Code_ETL_Log_Search_Most_Searched_Categories.py` to:
     
 - If not: try using **MYSQL_CONNECTION_STRING** in `credentials_sample.env` to connect Power BI to the DB instance via ODBC
 
-Once connected, load the tables & use the data to build a dashboard (feel free to reference my humble dashboard in the file `study-de-final-project-Pham-Quoc-Hung.pbix`).
+Once connected, load the tables & use the data to build a dashboard (feel free to reference my humble dashboard in the file `powerbi\study-de-final-project-Pham-Quoc-Hung.pbix`).
+
+![Power BI dashboard page 1](Final%20Project/powerbi/powerbi_dashboard_page1.png)
+
+![Power BI dashboard page 2](Final%20Project/powerbi/powerbi_dashboard_page2.png)
 
 ## Contact
 

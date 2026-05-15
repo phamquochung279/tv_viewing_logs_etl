@@ -2,7 +2,11 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import * 
 from pyspark.sql.window import Window
 import os
+from pathlib import Path
 import mysql.connector
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+PROJECT_DIR = SCRIPT_DIR.parent
 
 spark = SparkSession.builder \
     .config("spark.driver.memory", "8g") \
@@ -108,6 +112,6 @@ if __name__ == "__main__":
     base_path = r"C:\Users\acer\Desktop\study_de\Big Data\Dataset\Dataset\log_search"
     prev_month_data, prev_month_data_most_searched = load_and_process_log_search(base_path, '202206')
     current_month_data, current_month_most_searched = load_and_process_log_search(base_path, '202207')
-    comparison_csv_path = "../Final Project/most_searched_comparison"
-    distinct_csv_path = "../Final Project/distinct_most_searched_keywords"
+    comparison_csv_path = PROJECT_DIR / "most_searched_comparison"
+    distinct_csv_path = PROJECT_DIR / "distinct_most_searched_keywords"
     export_distinct_most_searched_keywords_to_csv(prev_month_data_most_searched, current_month_most_searched, "June", "July", comparison_csv_path, distinct_csv_path)

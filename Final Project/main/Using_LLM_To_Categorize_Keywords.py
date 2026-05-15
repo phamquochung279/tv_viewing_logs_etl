@@ -2,7 +2,11 @@ import pandas as pd
 import threading
 from concurrent.futures import ThreadPoolExecutor
 import os
+from pathlib import Path
 from openai import OpenAI
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+PROJECT_DIR = SCRIPT_DIR.parent
 
 def load_keywords(input_file):
     """Load keywords từ file CSV vào DataFrame 1 cột"""
@@ -37,7 +41,7 @@ def classify_keywords_parallel(df, batch_size, file_name, max_workers=2):
     print(f"Số batch: {len(batches)}")
     
     MODEL_ID = "qwen2.5-7b-instruct.gguf"
-    file_path = f'{file_name}.txt'
+    file_path = PROJECT_DIR / f'{file_name}.txt'
     file_lock = threading.Lock()
 
     # Chế độ 'a' sẽ tự động append nếu file đã tồn tại, tạo mới nếu chưa có
@@ -135,7 +139,7 @@ def classify_keywords_parallel(df, batch_size, file_name, max_workers=2):
     return all_results
 
 if __name__ == "__main__":
-    input_file = "../Final Project Folder/distinct_most_searched_keywords/distinct_most_searched_keywords.csv"
+    input_file = PROJECT_DIR / "distinct_most_searched_keywords" / "distinct_most_searched_keywords.csv"
     keywords = load_keywords(input_file)
     
     # Test với 10,000 dòng random
