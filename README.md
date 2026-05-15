@@ -19,7 +19,94 @@ Bài tập cuối khóa của lớp DE anh Trần Hoàng Long. Project này ho�
 - **Spark**: 3.3.0
 - **Hadoop**: 3.0
 - **Java**: 18.0.2.1
+- **Terraform**: >= 1.0
 - **MySQL Connector/ODBC**: 8.0.33
+- **AWS CLI**: v2 (nếu muốn dùng Terraform, AWS CLI là cần thiết để chạy `aws configure`)
+
+### Cấu hình AWS Credentials (nếu dùng Terraform)
+
+- **Local machine (khuyên dùng cho project này):**
+  ```bash
+  aws configure
+  ```
+  Nhập lần lượt các giá trị được yêu cầu:
+  - AWS Access Key ID
+  - AWS Secret Access Key
+  - Default region name (ví dụ: `ap-southeast-1`)
+  - Default output format (`json`)
+
+  #### NOTE: Cách lấy AWS Access Key ID & AWS Secret Access Key
+
+  1. Đăng nhập AWS Console bằng user có quyền IAM.
+  2. Vào service **IAM** -> **Users** -> chọn user của bạn.
+  3. Chọn tab **Security credentials**.
+  4. Ở mục **Access keys**, bấm **Create access key**.
+  5. Chọn use case phù hợp (thường là CLI hoặc Local code), rồi bấm **Create access key**.
+  6. Copy ngay 2 giá trị sau:
+      - **Access Key ID**
+      - **Secret Access Key**
+
+  Lưu ý:
+  - AWS chỉ hiển thị **Secret Access Key** đúng 1 lần tại màn hình tạo key. Nếu quên không lưu lại, bạn phải tạo key mới.
+  - Nên dùng IAM User riêng cho project, cấp quyền tối thiểu cần thiết (ví dụ chỉ RDS/VPC liên quan), tránh dùng root account.
+
+Cuối cùng, kiểm tra credentials đã hoạt động chưa:
+```bash
+aws sts get-caller-identity
+```
+
+Terraform sẽ tự gọi AWS API thông qua AWS provider, bạn chỉ cần đảm bảo máy chạy Terraform có mạng đi tới AWS API endpoints (internet/NAT/VPC endpoints tùy kiến trúc mạng). Thường thì máy local bình thường đã có access sẵn, không cần phải làm gì thêm.
+
+Để kiểm tra cho chắc, chạy script PowerShell dưới đây trên máy local:
+
+```powershell
+# Quick check: DNS + TCP 443 + STS + RDS API
+$region = "ap-southeast-1"
+$endpoints = @(
+  "sts.$region.amazonaws.com",
+  "rds.$region.amazonaws.com",
+  "ec2.$region.amazonaws.com",
+  "iam.amazonaws.com"
+)
+
+Write-Host "== 1) AWS CLI version =="
+aws --version
+
+Write-Host "`n== 2) DNS and TCP 443 checks =="
+foreach ($ep in $endpoints) {
+  $dnsOk = $false
+  $tcpOk = $false
+
+  try {
+    Resolve-DnsName $ep -ErrorAction Stop | Out-Null
+    $dnsOk = $true
+  } catch {
+    $dnsOk = $false
+  }
+
+  try {
+    $tcp = Test-NetConnection $ep -Port 443 -WarningAction SilentlyContinue
+    $tcpOk = [bool]$tcp.TcpTestSucceeded
+  } catch {
+    $tcpOk = $false
+  }
+
+  Write-Host ("{0} | DNS={1} | TCP443={2}" -f $ep, $dnsOk, $tcpOk)
+}
+
+Write-Host "`n== 3) STS identity check =="
+aws sts get-caller-identity --region $region
+
+Write-Host "`n== 4) RDS API check =="
+aws rds describe-db-engine-versions --region $region --max-items 5 | Out-Null
+if ($LASTEXITCODE -eq 0) {
+  Write-Host "RDS API reachable: PASS"
+} else {
+  Write-Host "RDS API reachable: FAIL"
+}
+```
+
+Nếu các endpoint đều có `TCP443=True` và lệnh STS/RDS không lỗi, thì máy local **đã sẵn sàng** để chạy Terraform.
 
 ### Dependencies:
 
@@ -41,12 +128,58 @@ pip install -r requirements.txt
 
 ## 2. Tạo database MySQL
 
+> **💡 Note**: Bước này **đã được cover hoàn toàn bởi Terraform**. Bạn có thể chọn **Cách 1: Terraform (Recommended)** để tự động hóa, hoặc làm **Thủ Công** nếu muốn.
+
 Ở project này chúng ta dùng AWS, bạn có thể thử các cloud platform khác nếu muốn.
 
-- Login vào AWS. Search & click vào Service **Aurora and RDS**. Vào tab **Database** & ấn **Create database**.
+### Cách 1: Sử Dụng Terraform (Recommended)
+
+Bạn có thể dùng Terraform để tự động hóa hoàn toàn quá trình tạo DB trên AWS này:
+
+```bash
+# 1. Vào thư mục Terraform
+cd terraform
+
+# 2. Copy file ví dụ và sửa các thông tin
+cp terraform.tfvars.example terraform.tfvars
+# Mở terraform.tfvars và sửa:
+#   - db_instance_identifier (tên unique)
+#   - master_username (username MySQL)
+#   - master_password (password - ≥8 ký tự)
+#   - db_name (tên database)
+
+# 3. Khởi tạo & Deploy
+terraform init
+terraform plan      # Xem plan trước
+terraform apply     # Chạy (gõ 'yes')
+
+# 4. Chờ 5-10 phút cho RDS instance được tạo...
+
+# 5. Lấy connection info
+terraform output credentials_env_template
+```
+
+Một vài lệnh Terraform hay dùng thêm:
+```bash
+terraform validate
+terraform fmt -recursive
+terraform destroy
+terraform destroy -target=aws_db_instance.mysql
+```
+
+**Xem thêm**: [terraform/README.md](terraform/README.md) để hiểu chi tiết về Terraform setup.
+
+### Cách 2: Thủ Công
+
+Nếu bạn muốn làm mọi thứ bằng tay cho đơn giản:
+
+- Login vào AWS.
+- Chọn 1 region nào đó gần Việt Nam (VD: **ap-southeast-1**, tức Singapore) để tối ưu tốc độ & chi phí.
+- Search & click vào Service **Aurora and RDS**. Vào tab **Database** & ấn **Create database**.
 - *Choose a database creation method*: chọn **Standard create**
 - *Engine options*: chọn **MySQL** cho *Engine types* & **8.0.42** cho *Engine version*
 - Điền các trường *DB instance identifier*, *Master username*, *Master password* tùy theo ý thích.
+    - NOTE: username không được để là "root", "mysql", "admin". Password phải có ít nhất 8 kí tự, nên có special chars, chữ hoa, chữ thường và số.
 - *Public access*: chọn **Yes** (cho đơn giản)
 - *VPC security group*: chọn **Choose existing** nếu bạn đã có sẵn 1 Security Group cho phép "My IP" truy cập port 3306.
     
@@ -55,6 +188,48 @@ pip install -r requirements.txt
 - Chờ đến khi DB instance chuyển sang Status "Available" là **XONG!**
 
 ## 3. Update credentials
+
+> **💡 Note**: Nếu bạn dùng **Terraform** ở bước 2, phần này sẽ được **tự động xử lý**. Nếu làm thủ công, hãy làm theo hướng dẫn bên dưới.
+
+### Nếu dùng Terraform cho bước 2: 
+
+Để output các thông tin connection, chạy lệnh:
+
+```bash
+# Trong thư mục terraform/
+terraform output credentials_env_template
+```
+
+Để tự động cập nhật **các biến đã có sẵn** trong file `Final Project/credentials.env` bằng các thông tin connection trong output, chạy script PowerShell sau trong folder `terraform/`:
+
+```powershell
+$target = "..\Final Project\credentials.env"
+$template = terraform output -raw credentials_env_template
+
+$templateMap = @{}
+$template -split "`r?`n" | ForEach-Object {
+  if ($_ -match '^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$') {
+    $templateMap[$matches[1]] = $matches[2]
+  }
+}
+
+$updated = Get-Content $target | ForEach-Object {
+  if ($_ -match '^\s*([A-Z0-9_]+)\s*=') {
+    $k = $matches[1]
+    if ($templateMap.ContainsKey($k)) {
+      "${k}=$($templateMap[$k])"
+    } else {
+      $_
+    }
+  } else {
+    $_
+  }
+}
+
+Set-Content -Path $target -Value $updated -Encoding utf8
+```
+
+### Nếu làm thủ công bước 2:
 
 - Sau khi status của DB instance chuyển sang "Available", click vào DB identifier --> tab **Connectivity & security** để lấy endpoint, port (mặc định là 3306)
 
@@ -131,7 +306,96 @@ This is the capstone project for the Data Engineering course by Mr. Trần Hoàn
 - **Spark**: 3.3.0
 - **Hadoop**: 3.0
 - **Java**: 18.0.2.1
+- **Terraform**: >= 1.0
+- **AWS CLI**: v2 (required to run `aws configure`)
 - **MySQL Connector/ODBC**: 8.0.33
+
+### Configure AWS Credentials & AWS API (for Terraform)
+
+This part is **not configured inside this project source code**. You must configure it externally before running Terraform.
+
+- **Local machine (recommended for this project):**
+  ```bash
+  aws configure
+  ```
+  Then provide:
+  - AWS Access Key ID
+  - AWS Secret Access Key
+  - Default region name (example: `ap-southeast-1`)
+  - Default output format (`json`)
+
+  ### How to Get AWS Access Key ID & AWS Secret Access Key
+
+  1. Sign in to AWS Console with an IAM-enabled account.
+  2. Go to **IAM** -> **Users** -> select your user.
+  3. Open the **Security credentials** tab.
+  4. In **Access keys**, click **Create access key**.
+  5. Choose the appropriate use case (usually CLI or Local code), then click **Create access key**.
+  6. Copy and store these two values immediately:
+    - **Access Key ID**
+    - **Secret Access Key**
+
+  Notes:
+  - AWS shows **Secret Access Key** only once at creation time. If you lose it, create a new key.
+  - Use a dedicated IAM user with least-privilege permissions for this project (for example only required RDS/VPC actions). Avoid using the root account.
+
+Validate credentials:
+```bash
+aws sts get-caller-identity
+```
+
+Terraform calls AWS APIs automatically through the AWS provider, you only need network connectivity from the machine running Terraform to AWS API endpoints (internet/NAT/VPC endpoints depending on your network architecture). Usually your local machine would have access by default, you don't have to configure anything beforehand.
+
+Quick check script for **local machine (PowerShell)**:
+
+```powershell
+# Quick check: DNS + TCP 443 + STS + RDS API
+$region = "ap-southeast-1"
+$endpoints = @(
+  "sts.$region.amazonaws.com",
+  "rds.$region.amazonaws.com",
+  "ec2.$region.amazonaws.com",
+  "iam.amazonaws.com"
+)
+
+Write-Host "== 1) AWS CLI version =="
+aws --version
+
+Write-Host "`n== 2) DNS and TCP 443 checks =="
+foreach ($ep in $endpoints) {
+  $dnsOk = $false
+  $tcpOk = $false
+
+  try {
+    Resolve-DnsName $ep -ErrorAction Stop | Out-Null
+    $dnsOk = $true
+  } catch {
+    $dnsOk = $false
+  }
+
+  try {
+    $tcp = Test-NetConnection $ep -Port 443 -WarningAction SilentlyContinue
+    $tcpOk = [bool]$tcp.TcpTestSucceeded
+  } catch {
+    $tcpOk = $false
+  }
+
+  Write-Host ("{0} | DNS={1} | TCP443={2}" -f $ep, $dnsOk, $tcpOk)
+}
+
+Write-Host "`n== 3) STS identity check =="
+aws sts get-caller-identity --region $region
+
+Write-Host "`n== 4) RDS API check =="
+aws rds describe-db-engine-versions --region $region --max-items 5 | Out-Null
+if ($LASTEXITCODE -eq 0) {
+  Write-Host "RDS API reachable: PASS"
+} else {
+  Write-Host "RDS API reachable: FAIL"
+}
+```
+
+If all endpoints show `TCP443=True` and both STS/RDS commands succeed, your local machine is ready to use Terraform.
 
 ### Dependencies:
 
@@ -153,7 +417,56 @@ pip install -r requirements.txt
 
 ## 2. Create MySQL Database
 
+> **💡 Note**: This step is **fully covered by Terraform**. You can choose **Terraform Method (Recommended)** to automate the entire process, or do it **Manually** if you prefer.
+
 This project uses AWS. You may try other cloud platforms if you wish.
+
+### Method 1: Using Terraform (Recommended)
+
+Instead of manually clicking through the AWS Console, you can use Terraform to fully automate the entire process:
+
+```bash
+# 1. Navigate to Terraform directory
+cd terraform
+
+# 2. Copy example file and edit the values
+cp terraform.tfvars.example terraform.tfvars
+# Open terraform.tfvars and update:
+#   - db_instance_identifier (unique name)
+#   - master_username (MySQL username)
+#   - master_password (password - ≥8 characters)
+#   - db_name (database name)
+
+# 3. Initialize & Deploy
+terraform init
+terraform plan      # View plan first
+terraform apply     # Execute (type 'yes')
+
+# 4. Wait 5-10 minutes for RDS instance creation...
+
+# 5. Get connection info
+terraform output credentials_env_template
+```
+
+A few more useful Terraform commands:
+```bash
+terraform validate
+terraform fmt -recursive
+terraform destroy
+terraform destroy -target=aws_db_instance.mysql
+```
+
+**Advantages**:
+- ⚡ 2-3x faster
+- 🔄 Reusable for multiple projects
+- 📝 Infrastructure as Code (version control friendly)
+- 🚀 CI/CD friendly
+
+**Learn more**: [terraform/README.md](terraform/README.md) for detailed Terraform setup guide.
+
+### Method 2: Manual Setup
+
+If you prefer to do things manually:
 
 - Log in to AWS. Search & click on the **Aurora and RDS** service. Go to the **Database** tab & click **Create database**.
 - *Choose a database creation method*: select **Standard create**
@@ -167,6 +480,50 @@ This project uses AWS. You may try other cloud platforms if you wish.
 - Wait until the DB instance status changes to "Available" — **DONE!**
 
 ## 3. Update Credentials
+
+> **💡 Note**: If you used **Terraform** in step 2, this step is **automatically handled**. If you did it manually, follow the guide below.
+
+### If Using Terraform
+
+To print out the connection information, run this command:
+
+```bash
+# Inside terraform/ directory
+terraform output credentials_env_template
+```
+
+To update **the existing variables** in `Final Project/credentials.env` with the connection info returned by output, run this PowerShell script from the `terraform/` directory:
+
+```powershell
+$target = "..\Final Project\credentials.env"
+$template = terraform output -raw credentials_env_template
+
+$templateMap = @{}
+$template -split "`r?`n" | ForEach-Object {
+  if ($_ -match '^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$') {
+    $templateMap[$matches[1]] = $matches[2]
+  }
+}
+
+$updated = Get-Content $target | ForEach-Object {
+  if ($_ -match '^\s*([A-Z0-9_]+)\s*=') {
+    $k = $matches[1]
+    if ($templateMap.ContainsKey($k)) {
+      "${k}=$($templateMap[$k])"
+    } else {
+      $_
+    }
+  } else {
+    $_
+  }
+}
+
+Set-Content -Path $target -Value $updated -Encoding utf8
+```
+
+This keeps comments/other lines unchanged and updates only keys that already exist in `credentials.env`.
+
+### If Using Manual Setup
 
 - Once the DB instance status changes to "Available", click on the DB identifier --> **Connectivity & security** tab to get the endpoint and port (default is 3306)
 
