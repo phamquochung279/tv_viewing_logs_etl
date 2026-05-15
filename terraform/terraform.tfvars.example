@@ -1,0 +1,68 @@
+# Đây là template, không phải file thật. Copy file này sang file terraform.tfvars & điền giá trị chuẩn của bạn vào.
+# NOTE: KHÔNG BAO GIỜ commit file terraform.tfvars thật lên Git.
+
+# Region AWS
+aws_region = "ap-southeast-1"
+
+# DB Instance identifier - tên unique cho RDS instance
+# Ví dụ: my-etl-mysql-db
+db_instance_identifier = "my-etl-mysql-db"
+
+# Phiên bản MySQL engine
+db_engine_version = "8.0.42"
+
+# DB instance class - config computing power
+# Với free tier: db.t3.micro hoặc db.t4g.micro
+# Với môi trường dev: db.t3.small, db.t3.medium, v.v.
+db_instance_class = "db.t3.micro"
+
+# Dung lượng disk sẽ được cấp (GB), tối thiểu là 20
+db_allocated_storage = 20
+
+# Loại storage: gp2 (cũ), gp3 (mới hơn, recommended), io1 (mạnh nhất)
+db_storage_type = "gp2"
+
+# Master username - không được là "root", "mysql", "admin", v.v.
+# Ví dụ: dbadmin
+master_username = "dbadmin"
+
+# Master password - ít nhất 8 ký tự
+# Nên dùng: special chars, chữ hoa, chữ thường và số
+master_password = "ChangeMe123!@#" # NOTE: Nhớ đổi sang 1 password mạnh!
+
+# Tên database sẽ được tạo ban đầu
+# Ví dụ: etl_db
+db_name = "etl_db"
+
+# Có cho public access không? (true = có thể access từ internet, false = chỉ trong VPC)
+# Với môi trường dev/testing có thể để true, production thì nên giới hạn
+publicly_accessible = true
+
+# Có bỏ qua final snapshot khi destroy không?
+# Nên để: false cho production, true cho development
+skip_final_snapshot = true
+
+# Các CIDR blocks được phép truy cập database
+# "0.0.0.0/0" = mở toàn bộ internet (chỉ nên dùng cho dev/testing!)
+# Production nên giới hạn theo IP cụ thể/theo security group
+allowed_cidr_blocks = ["0.0.0.0/0"]
+
+# Có tạo security group mới cho RDS instance hay không
+create_security_group = true
+
+# Nếu dùng security group có sẵn, đặt create_security_group = false và khai báo id của SG đó:
+# existing_security_group_id = "sg-xxxxxxxxx"
+
+# Bật backup tự động
+enable_backup = true
+
+# Số ngày giữ backup
+backup_retention_period = 7
+
+# Tags áp dụng cho toàn bộ resources
+tags = {
+  Project     = "ETL-Project"
+  Environment = "Development"
+  ManagedBy   = "Terraform"
+  Owner       = "Hung Pham"
+}

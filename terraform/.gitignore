@@ -1,0 +1,42 @@
+# Terraform files and directories
+.terraform/
+.terraform.lock.hcl
+terraform.tfvars
+terraform.tfplan
+
+# State files (contain sensitive information)
+*.tfstate
+*.tfstate.backup
+*.tfstate.*.backup
+
+# Environment variables
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Exclude override files, as they are often used to override resources locally and so
+# are often not checked in
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
+# Ignore plan files
+*.tfplan
