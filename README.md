@@ -7,9 +7,9 @@
 </a>
 
 Bài tập cuối khóa của lớp DE anh Trần Hoàng Long. Project này hoạt động theo các bước sau: 
-1) Xử lý & tổng hợp data ở 2 folder `log_content` & `log_search` *(2 folder này không tiện show public, vui lòng liên hệ tôi để lấy)*
-2) Bắn các bảng data tổng hợp lên DB
-3) Kết nối viz tool với data trong DB để vẽ dashboard
+1) Xử lý & tổng hợp 8GB data raw ở 2 folder `log_content` & `log_search` bằng PySpark và self-hosted LLM tùy chọn *(2 folder này không tiện show public, vui lòng liên hệ tôi để lấy)*
+2) Bắn các bảng data tổng hợp lên DB (AWS RDS, tạo bởi Terraform hoặc thủ công)
+3) Kết nối viz tool (Power BI) với data trong DB để vẽ dashboard
 
 ## 1. Cài đặt môi trường và thư viện
 
