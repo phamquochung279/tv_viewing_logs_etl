@@ -283,6 +283,14 @@ Connect xong, load các bảng & dùng data để vẽ dashboard (tham khảo da
 
 ![Power BI dashboard page 2](Final%20Project/powerbi/powerbi_dashboard_page2.png)
 
+## 9. Ý tưởng cải thiện project
+
+1. **Sử dụng Data Lake cho production ingest + storage**: Lưu data trên data lake (VD: S3, GCS, Delta Lake) thay vì để file trong local folders như hiện tại.
+2. **Sử dụng Power BI Pro/Premium để publish dashboard live từ AWS RDS**: Tạo dashboard live, chia sẻ cho stakeholder và refresh dữ liệu tự động.
+3. **Orchestration bằng Airflow/Prefect**: Tạo ETL pipeline thu thập data mới hằng ngày, quản lý dependency, retry, alert khi job fail.
+4. **Data Quality checks (Great Expectations hoặc custom checks)**: Validate schema, null ratio, duplicate key, volume drift, v.v. trong data trước khi aggregate thành bảng final.
+5. **CI/CD cho ETL và Terraform**: Tự động chạy lint/test/plan/apply theo môi trường dev/staging/prod để giảm rủi ro release.
+
 ## Contact
 
 Author: Phạm Quốc Hùng <br />
@@ -580,6 +588,14 @@ Once connected, load the tables & use the data to build a dashboard (feel free t
 ![Power BI dashboard page 1](Final%20Project/powerbi/powerbi_dashboard_page1.png)
 
 ![Power BI dashboard page 2](Final%20Project/powerbi/powerbi_dashboard_page2.png)
+
+## 9. Ideas for Improvement
+
+1. **Use a Data Lake for production ingest + storage**: Store data in a data lake (for example: S3, Delta Lake, GCS) instead of local folders.
+2. **Use Power BI Pro/Premium to publish live dashboards from AWS RDS**: Build live dashboards, share with stakeholders, and refresh data automatically.
+3. **Orchestration with Airflow/Prefect**: Schedule ETL jobs to collect new data every day, manage dependencies, retries, and failure alerts.
+4. **Data quality checks (Great Expectations or custom checks)**: Validate schema, null ratio, duplicate keys, volume drift, etc. before publishing aggregated tables.
+5. **CI/CD for ETL and Terraform**: Automate lint/test/plan/apply across dev/staging/prod to reduce release risk.
 
 ## Contact
 
